@@ -79,7 +79,7 @@ public class IcyStreamDataRetriever {
 
 	private String getParamFromHttpHeader(Map<String, List<String>> header, String paramName) {
 		List<String> paramList = header.get(paramName);
-		if (paramList != null && !paramList.isEmpty()) return paramList.get(0);		
+		if (paramList != null && !paramList.isEmpty()) return paramList.get(0);
 		return null;
 	}
 
@@ -87,8 +87,8 @@ public class IcyStreamDataRetriever {
 		try {
 			return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
 		} catch (Exception e) {
+			return null;
 		}
-		return null;
 	}
 
 	private int parseInt(String number) {
@@ -129,11 +129,20 @@ public class IcyStreamDataRetriever {
 		String rawMetadata = "";
 		for (int i = 0; i < maxReadRetries; i++) {
 			rawMetadata = readMetadata();
-			if (!rawMetadata.isEmpty() && headerData.name != null && !rawMetadata.contains(headerData.name)) {
+			if (isRawMetadataValid(rawMetadata)) {
 				break;
 			}
 		}
-		metadata = parseMetadata(rawMetadata);
+		metadata = parseMetadata(rawMetadata, "StreamTitle='(.*?)';");
+		if (metadata == null) metadata = parseMetadata(rawMetadata, "StreamTitle='(.*?)'");
+		if (metadata == null) metadata = parseMetadata(rawMetadata, "StreamTitle='(.*?)");
+	}
+
+	private boolean isRawMetadataValid(String rawMetadata) {
+		if (rawMetadata.isEmpty()) return false;
+		if (headerData.name == null || headerData.name.isEmpty()) return true;
+		if (rawMetadata.contains(headerData.name)) return false;
+		return true;
 	}
 
 	private String readMetadata() throws IOException {
@@ -154,10 +163,11 @@ public class IcyStreamDataRetriever {
 			if (count > (metaDataOffset + metaDataLength)) break;
 		}
 
-		return byteListToString(metadataBytes, StandardCharsets.ISO_8859_1);
+		return byteListToString(metadataBytes, StandardCharsets.UTF_8);
 	}
 
 	private String byteListToString(List<Byte> list, Charset charset) {
+		if (list.size() == 0) return "";
 		byte[] array = new byte[list.size()];
 		int i = 0;
 		for (Byte current : list) {
@@ -167,8 +177,8 @@ public class IcyStreamDataRetriever {
 		return new String(array, charset);
 	}
 
-	private String parseMetadata(String rawMetadata) {
-		Pattern p = Pattern.compile("StreamTitle='(.*?)';");
+	private String parseMetadata(String rawMetadata, String patternRegex) {
+		Pattern p = Pattern.compile(patternRegex);
 		Matcher m = p.matcher(rawMetadata);
 		if (m.find()) return (String) m.group(1);
 		return null;

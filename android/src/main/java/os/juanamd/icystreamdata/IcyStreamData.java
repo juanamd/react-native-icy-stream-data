@@ -8,7 +8,7 @@ import java.net.URL;
 import java.util.List;
 
 public class IcyStreamData implements Runnable {
-	private static final int METADATA_READ_MAX_RETRIES = 100;
+	private static final int METADATA_READ_MAX_RETRIES = 50;
 	private static final String ARTIST_TRACK_DELIMITER = " - ";
 
 	protected URL streamUrl;
