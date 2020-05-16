@@ -6,7 +6,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -85,7 +84,7 @@ public class IcyStreamDataRetriever {
 
 	private String urlDecode(String value) {
 		try {
-			return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
+			return URLDecoder.decode(value, "UTF-8");
 		} catch (Exception e) {
 			return null;
 		}
@@ -163,7 +162,7 @@ public class IcyStreamDataRetriever {
 			if (count > (metaDataOffset + metaDataLength)) break;
 		}
 
-		return byteListToString(metadataBytes, StandardCharsets.UTF_8);
+		return byteListToString(metadataBytes, Charset.forName("UTF-8"));
 	}
 
 	private String byteListToString(List<Byte> list, Charset charset) {
